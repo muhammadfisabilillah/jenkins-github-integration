@@ -4,7 +4,8 @@ pipeline {
     environment {
         IMAGE_NAME = 'mfisabilillah/simple-app'
         REGISTRY_CREDENTIALS = 'dockerhub-credentials'
-        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe'
+        // Menggunakan path umum Docker Desktop untuk user Windows
+        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\docker.exe'
     }
 
     stages {
