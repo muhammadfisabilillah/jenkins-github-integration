@@ -1,32 +1,48 @@
 pipeline {
     agent any
-environment {
-    IMAGE_NAME = 'mfisabilillah/simple-app'
-    REGISTRY_CREDENTIALS = 'dockerhub-credentials'
-}
+
+    environment {
+        IMAGE_NAME = 'mfisabilillah/simple-app'
+        REGISTRY_CREDENTIALS = 'dockerhub-credentials'
+        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe'
+    }
+
     stages {
-        stage('Checkout') { 
-            steps { checkout scm } 
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
         }
-        stage('Build') { 
-            steps { bat 'echo "Build di Windows"' } 
+
+        stage('Build') {
+            steps {
+                bat 'echo "Build di Windows"'
+            }
         }
+
         stage('Build Docker Image') {
-            steps { bat "docker build -t %IMAGE_NAME%:%BUILD_NUMBER% ." }
+            steps {
+                script {
+                    bat "\"${env.DOCKER_PATH}\" build -t ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ."
+                }
+            }
         }
+
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: REGISTRY_CREDENTIALS, 
-                    usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    bat 'docker login -u %USER% -p %PASS%'
-                    bat "docker push %IMAGE_NAME%:%BUILD_NUMBER%"
-                    bat "docker tag %IMAGE_NAME%:%BUILD_NUMBER% %IMAGE_NAME%:latest"
-                    bat "docker push %IMAGE_NAME%:latest"
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${env.REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        bat "\"${env.DOCKER_PATH}\" login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                        bat "\"${env.DOCKER_PATH}\" push ${env.IMAGE_NAME}:${env.BUILD_NUMBER}"
+                    }
                 }
             }
         }
     }
-    post { 
-        always { echo 'Selesai build' } 
+
+    post {
+        always {
+            echo 'Selesai build'
+        }
     }
 }
