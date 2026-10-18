@@ -1,9 +1,9 @@
 pipeline {
     agent any
-    environment {
-        IMAGE_NAME = 'username_dockerhub_kamu/simple-app'
-        REGISTRY_CREDENTIALS = 'dockerhub-credentials'
-    }
+environment {
+    IMAGE_NAME = 'mfisabilillah/simple-app'
+    REGISTRY_CREDENTIALS = 'dockerhub-credentials'
+}
     stages {
         stage('Checkout') { 
             steps { checkout scm } 
