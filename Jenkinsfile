@@ -1,11 +1,11 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = 'mfisabilillah/simple-app'
-        REGISTRY_CREDENTIALS = 'dockerhub-credentials'
-    }
-
+environment {
+    IMAGE_NAME = 'mfisabilillah/simple-app'
+    REGISTRY_CREDENTIALS = 'dockerhub-credentials'
+    PATH = "C:\\Users\\Abil\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;${env.PATH}"
+}
     stages {
         stage('Checkout') {
             steps {
