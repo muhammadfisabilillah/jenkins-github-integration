@@ -4,8 +4,6 @@ pipeline {
     environment {
         IMAGE_NAME = 'mfisabilillah/simple-app'
         REGISTRY_CREDENTIALS = 'dockerhub-credentials'
-        // Path absolut standar Docker Desktop di Windows
-        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe'
     }
 
     stages {
@@ -23,19 +21,30 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    bat "\"${env.DOCKER_PATH}\" build -t ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ."
-                }
+                bat 'docker build -t %IMAGE_NAME%:%BUILD_NUMBER% .'
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: "${env.REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        bat "\"${env.DOCKER_PATH}\" login -u %DOCKER_USER% -p %DOCKER_PASS%"
-                        bat "\"${env.DOCKER_PATH}\" push ${env.IMAGE_NAME}:${env.BUILD_NUMBER}"
-                    }
+                withCredentials([usernamePassword(
+                    credentialsId: "${env.REGISTRY_CREDENTIALS}",
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_TOKEN'
+                )]) {
+                    bat '''
+                        powershell -NoProfile -NonInteractive -Command "$env:DOCKER_TOKEN | docker login --username $env:DOCKER_USER --password-stdin; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }"
+                        if errorlevel 1 exit /b 1
+
+                        docker push %IMAGE_NAME%:%BUILD_NUMBER%
+                        if errorlevel 1 exit /b 1
+
+                        docker tag %IMAGE_NAME%:%BUILD_NUMBER% %IMAGE_NAME%:latest
+                        if errorlevel 1 exit /b 1
+
+                        docker push %IMAGE_NAME%:latest
+                        if errorlevel 1 exit /b 1
+                    '''
                 }
             }
         }
